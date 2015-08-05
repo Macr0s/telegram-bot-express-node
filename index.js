@@ -1,13 +1,13 @@
 var body = require("body-parser"),
 async = require("async"),
 request = require("request"),
-express = reauire("express"),
+express = require("express"),
 util = require('util'),
 EventEmitter = require('events').EventEmitter,
 extend = require("extend");
 
-function TelegramBot(api, app, port){
-	if (typeof port != "undefined"){
+function TelegramBot(api, port){
+	if (typeof port == "number"){
 		app = express();
 		this.port = port;
 	}
@@ -16,12 +16,12 @@ function TelegramBot(api, app, port){
 	this.apikey = api;
 	this.baseurl = "https://api.telegram.org/bot"+api+"/";
 
-	app.use(body.json());
-	app.use(body.urlencoded({ extended: true }));
+	this.app.use(body.json());
+	this.app.use(body.urlencoded({ extended: true }));
 
 	var self = this;
 
-	this.api.use(function (req, res, next){
+	this.app.use(function (req, res, next){
 		self.emit("message", req.body);
 		res.write("ok");
 		res.end();
@@ -30,7 +30,12 @@ function TelegramBot(api, app, port){
 	});
 }
 
+util.inherits(TelegramBot, EventEmitter);
+
 TelegramBot.prototype._prepare = function (data, merged){
+
+	EventEmitter.call(this);
+
 	var result = {};
 
 	result.message_id = data.message_id;
@@ -87,7 +92,7 @@ TelegramBot.prototype._get = function (method, result){
 	request(this.baseurl + method, function (error, response, body) {
 		if (!error && httpResponse.statusCode == 200) {
 			try{
-				data = JSON.parse(result);
+				data = JSON.parse(body);
 				if (data.ok){
 					result(null, data);
 				}else{
@@ -106,10 +111,10 @@ TelegramBot.prototype._post = function (method, data, result){
 	request.post({
 		url: this.baseurl + method, 
 		form: data
-	}, function(err,httpResponse,body){
+	}, function(error,httpResponse,body){
 		if (!error && httpResponse.statusCode == 200) {
 			try{
-				data = JSON.parse(result);
+				data = JSON.parse(body);
 				if (data.ok){
 					result(null, data);
 				}else{
@@ -178,10 +183,4 @@ TelegramBot.prototype.getUserProfilePhotos = function(data, cb) {
 TelegramBot.prototype.getUpdates = function(data, cb) {
 	this._post("getUpdates",data, cb);
 };
-
-
-
-
-utilinherits(TelegramBot, EventEmitter);
-
 module.exports.client = TelegramBot; 
