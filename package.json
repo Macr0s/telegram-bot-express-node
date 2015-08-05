@@ -1,6 +1,6 @@
 {
   "name": "telegram-bot-express",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Telegram Bot Client based on Express",
   "main": "index.js",
   "scripts": {
@@ -11,6 +11,10 @@
     "Bot",
     "Express"
   ],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Macr0s/telegram-bot-express-node"
+	},
   "author": "Macr0s <info@mfilippi.guru>",
   "license": "ISC",
   "dependencies": {
