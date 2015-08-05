@@ -1,0 +1,23 @@
+{
+  "name": "telegram-bot-express",
+  "version": "0.1.0",
+  "description": "Telegram Bot Client based on Express",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Telegram",
+    "Bot",
+    "Express"
+  ],
+  "author": "Macr0s <info@mfilippi.guru>",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^1.4.0",
+    "body-parser": "^1.13.3",
+    "express": "^4.13.3",
+    "extend": "^3.0.0",
+    "request": "^2.60.0"
+  }
+}
