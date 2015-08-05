@@ -28,13 +28,25 @@ function TelegramBot(api, port){
 
 		self.detectMessage(req.body);
 	});
+
+	this.events = new EventEmitter;
+	this.events_types = [];
 }
 
-util.inherits(TelegramBot, EventEmitter);
+TelegramBot.prototype.emit = function(type, data){
+	this.events.emit(type, data);
+}
+
+TelegramBot.prototype.on = function(type, fn){
+	this.events_types.push(type);
+	this.events.on(type, fn);
+}
+
+TelegramBot.prototype._hasListener = function (l){
+	return this.events_types.indexOf(l) != -1;
+}
 
 TelegramBot.prototype._prepare = function (data, merged){
-
-	EventEmitter.call(this);
 
 	var result = {};
 
@@ -59,25 +71,42 @@ TelegramBot.prototype._prepare = function (data, merged){
 
 TelegramBot.prototype.detectMessage = function (data){
 	if (typeof data.text != "undefined"){
-		this.emit("message_text", this._prepare(data, {
+		if (data.text.indexOf("/") === 0){
+			var cmd = data.text.substring(1)
+			var arg = cmd.split(" ");
+
+			cmd = arg[0];
+
+			if (this._hasListener("command."+cmd)){
+				arg = arg.shift();
+
+				this.emit("command."+cmd, arg);
+			}else{
+				this.emit("error.command", arg);
+			}
+
+			return;
+		}
+
+		this.emit("message.text", this._prepare(data, {
 			body: data.text
 		}));
 	}else if (typeof data.audio != "undefined"){
-		this.emit("message_audio", this._prepare(data, data.audio));
+		this.emit("message.audio", this._prepare(data, data.audio));
 	}else if (typeof data.document != "undefined"){
-		this.emit("message_document", this._prepare(data, data.document));
+		this.emit("message.document", this._prepare(data, data.document));
 	}else if (typeof data.photo != "undefined"){
-		this.emit("message_photo", this._prepare(data, {
+		this.emit("message.photo", this._prepare(data, {
 			photo: data.photo
 		}));
 	}else if (typeof data.sticker != "undefined"){
-		this.emit("message_sticker", this._prepare(data, data.sticker));
+		this.emit("message.sticker", this._prepare(data, data.sticker));
 	}else if (typeof data.contact != "undefined"){
-		this.emit("message_contact", this._prepare(data, data.contact));
+		this.emit("message.contact", this._prepare(data, data.contact));
 	}else if (typeof data.localtion != "undefined"){
-		this.emit("message_localtion", this._prepare(data, data.localtion));
+		this.emit("message.localtion", this._prepare(data, data.localtion));
 	}else{
-		this.emit("errorDetect", data);
+		this.emit("error.detect", data);
 	}
 }
 
@@ -141,23 +170,23 @@ TelegramBot.prototype.getMe = function(cb) {
 };
 
 TelegramBot.prototype.sendMessage = function(data, cb) {
-	this._post("sendMessage",data, cb);
+	this._post("sendMessage", data, cb);
 };
 
 TelegramBot.prototype.forwardMessage = function(data, cb) {
-	this._post("forwardMessage",data, cb);
+	this._post("forwardMessage", data, cb);
 };
 
 TelegramBot.prototype.sendPhoto = function(data, cb) {
-	this._post("sendPhoto",data, cb);
+	this._post("sendPhoto", data, cb);
 };
 
 TelegramBot.prototype.sendAudio = function(data, cb) {
-	this._post("sendAudio",data, cb);
+	this._post("sendAudio", data, cb);
 };
 
 TelegramBot.prototype.sendDocument = function(data, cb) {
-	this._post("sendDocument",data, cb);
+	this._post("sendDocument", data, cb);
 };
 
 TelegramBot.prototype.sendSticker = function(data, cb) {
